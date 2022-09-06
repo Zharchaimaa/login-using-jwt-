@@ -221,7 +221,7 @@ public class AdminController {
 
 		Todolist existingEMP = todoRepository.findById(id);//orelse(null)
 		if (existingEMP == null) {
-			System.out.println("Emp not found");
+			System.out.println("task not found");
 			return todoRepository.save(task);
 		} else {
 			existingEMP.setLabel(task.getLabel());
@@ -286,7 +286,7 @@ public class AdminController {
 		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		String currentDateTime= dateFormatter.format(new Date());
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment;filename-users_"+currentDateTime+".xlsx";
+		String headerValue = "attachment; filename=users_" + currentDateTime + ".xlsx";
 		response.setHeader(headerKey, headerValue);
 		List<User> listUsers = userService.listAll();
 		UserExcel excel = new UserExcel(listUsers);

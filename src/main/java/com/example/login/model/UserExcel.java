@@ -65,7 +65,7 @@ private void writeDataLines() {
 	for(User user : listUser) {
 		Row row = sheet.createRow(rowCount++);
 		int columnCount =0;
-		createCell(row, columnCount++, user.getId(),style);
+		createCell(row, columnCount++, user.getId().toString(),style);
 		createCell(row, columnCount++, user.getUsername(),style);
 		createCell(row, columnCount++, user.getEmail(),style);
 		createCell(row, columnCount++, user.getRole(),style);
@@ -73,8 +73,9 @@ private void writeDataLines() {
 }
 
 public void export(HttpServletResponse response) throws IOException {
-	writeDataLines();
 	writeHeaderLine();
+	writeDataLines();
+	
 	
 	ServletOutputStream outputStream = response.getOutputStream();
 	workbook.write(outputStream);
