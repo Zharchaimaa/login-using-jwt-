@@ -1,9 +1,14 @@
 package com.example.login.controller;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,17 +24,23 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.login.dto.ListUser;
 import com.example.login.model.File;
+import com.example.login.model.Message;
 import com.example.login.model.Role;
 import com.example.login.model.Todolist;
 import com.example.login.model.User;
+import com.example.login.model.UserExcel;
 import com.example.login.repository.FileRepository;
+import com.example.login.repository.MessageRepository;
 import com.example.login.repository.RoleRepository;
 import com.example.login.repository.TodoRepository;
 import com.example.login.repository.UserRepository;
 import com.example.login.response.UserResponse;
+import com.example.login.service.UserService;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -47,6 +58,12 @@ public class AdminController {
 
 	@Autowired
 	TodoRepository todoRepository;
+	
+	@Autowired
+	MessageRepository messageRepository;
+	
+	@Autowired 
+	UserService userService;
 	
 	@Autowired
 	PasswordEncoder encoder;
@@ -95,7 +112,7 @@ public class AdminController {
 	public List<User> addAllUsers(@RequestBody List<User> users) {
 		return userRepository.saveAll(users);
 	}
-
+//dont use it
 	@PostMapping("/addUser")
 	public ResponseEntity<?> addUser(
 			/* @RequestParam(name="file") MultipartFile userImage, */
@@ -144,12 +161,32 @@ public class AdminController {
 		public Todolist getTodoListById(@PathVariable(name = "id") long id) {
 			return todoRepository.findById(id);
 		}
+		
+		//message
+		@GetMapping("/getAllMessage")
+		public List<Message> getAllMessage() {
+			return messageRepository.findAll();
+		}
+		
+		//for show details 
+		@GetMapping("/getMessageById/{id}")
+		public Message getMessageById(@PathVariable(name="id") long id) {
+			return messageRepository.findById(id);
+		}
+		@DeleteMapping("/deleteMessage/{id}")
+		public boolean deleteMessage(@PathVariable(name = "id") long id) {
+			Message existingEMP = messageRepository.findById(id);
+			if (existingEMP != null) {
+				messageRepository.deleteById(id);
+				return true;
+			}
+			return false;
 
-	
+		}
 
 	@GetMapping("/getUsers")
 	public ResponseEntity<?> getUsers() {
-		return ResponseEntity.ok(new UserResponse("Your users are in the List Below", userRepository.findAll()));
+		return ResponseEntity.ok(new UserResponse("users are in the List Below", userRepository.findAll()));
 	}
 
 	@DeleteMapping("/delUser")
@@ -163,7 +200,7 @@ public class AdminController {
 	@PutMapping("/updUsers/{id}")
 	public User UpdateUser(@RequestBody User user, @PathVariable(name = "id") long id) {//Long =>long
 
-		User existingEMP = userRepository.findById(id);//orelse(null)
+		User existingEMP = userRepository.findById(id);//orElse(null)
 		if (existingEMP == null) {
 			System.out.println("Emp not found");
 			return userRepository.save(user);
@@ -174,6 +211,7 @@ public class AdminController {
 			/*
 			 * if(existingEMP.getRoles.size()==2) { //appel au fonction addRole }
 			 */
+			
 			userRepository.save(existingEMP);
 		}
 		return existingEMP;
@@ -199,6 +237,7 @@ public class AdminController {
 	/*
 	 * @DeleteMapping("/deleteAdminRole/{id}") public void deleteAdmin
 	 */
+	//dont use it
 	@PutMapping("/updUser")
 	public ResponseEntity<?> updUser(/* @RequestParam(name="file",required = false) MultipartFile userImage, */
 			@RequestParam(name = "username") String username, @RequestParam(name = "email") String email,
@@ -240,4 +279,87 @@ public class AdminController {
 		return false;
 
 	}
+	@GetMapping("/excel")
+	public void exportToExcel(HttpServletResponse response) throws IOException{
+		//System.out.println("export to Excel ...");
+		response.setContentType("application/octet-stream");
+		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		String currentDateTime= dateFormatter.format(new Date());
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment;filename-users_"+currentDateTime+".xlsx";
+		response.setHeader(headerKey, headerValue);
+		List<User> listUsers = userService.listAll();
+		UserExcel excel = new UserExcel(listUsers);
+		excel.export(response);
+	}
+	@GetMapping("/count")
+	@ResponseBody
+	public long countUser() {
+		long count = userService.getCountOfUsers();
+		return count;
+	}
+	@GetMapping("/countByRole")
+	@ResponseBody
+	public long countUserByRole(User user) {
+		long count = userService.getCountOfUserByRole(user);
+		return count;
+	}
+	@GetMapping("/countVNOK")
+	@ResponseBody
+	public long countVNOK() {
+		long count = userService.getValidName();
+		return count;
+	}
+	
+	@GetMapping("/countVNKO")
+	@ResponseBody
+	public long countVNKO() {
+		long count = userService.getValidNameKO();
+		return count;
+	}
+	@GetMapping("/countVDKO")
+	@ResponseBody
+	public long countVDKO() {
+		long count = userService.getValidDateKO();
+		return count;
+	}
+	@GetMapping("/countVDOK")
+	@ResponseBody
+	public long countVDOK() {
+		long count = userService.getValidDateOK();
+		return count;
+	}
+	@GetMapping("/countVMKO")
+	@ResponseBody
+	public long countVMKO() {
+		long count = userService.getValidMontantKO();
+		return count;
+	}
+	@GetMapping("/countVMOK")
+	@ResponseBody
+	public long countVMOK() {
+		long count = userService.getValidMontantOK();
+		return count;
+	}
+	@GetMapping("/countVCKO")
+	@ResponseBody
+	public long countVCKO() {
+		long count = userService.getValidColumnKO();
+		return count;
+	}
+	@GetMapping("/countVCOK")
+	@ResponseBody
+	public long countVCOK() {
+		long count = userService.getValidColumnOK();
+		return count;
+	}
+	@GetMapping("/countFileOK")
+	@ResponseBody
+	public long countFileOK() {
+		long count = userService.getCountFileOk();
+		return count;
+	}
+	
+	
 }
+

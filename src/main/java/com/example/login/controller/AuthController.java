@@ -16,14 +16,15 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.example.login.repository.RoleRepository;
 import com.example.login.repository.UserRepository;
 import com.example.login.request.LoginRequest;
 import com.example.login.response.JwtResponse;
 import com.example.login.security.jwt.JwtUtils;
 import com.example.login.security.services.UserDetailsImpl;
+import com.example.login.security.services.UserDetailsServiceImpl;
 //je veux le lier avec la partie front-end 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -44,6 +45,9 @@ public class AuthController {
 
 	@Autowired
 	JwtUtils jwtUtils;
+	
+	/*@Autowired
+	UserDetailsServiceImpl userDetails;*/
 
 	@PostMapping("/login")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -65,6 +69,9 @@ public class AuthController {
 												 userDetails.getEmail(), 
 												 roles));
 	}
-
 	
+	/*@RequestMapping(value = "/register", method = RequestMethod.POST)
+	    public ResponseEntity<?> saveUser(@RequestBody LoginRequest user) throws Exception {
+	        return ResponseEntity.ok(userDetails.save(user));
+	    }*/
 }

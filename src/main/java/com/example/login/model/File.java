@@ -24,7 +24,7 @@ public class File {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	//private static String date_controle = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+	private static String date_controle = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 	@Column(name="ENTITE",length=100)
 	private String entite;
 	@Column(name="NOM_FICHIER",length=100)
